@@ -2,6 +2,9 @@ import cv2
 import mediapipe as mp
 import numpy as np
 from collections import deque
+import os
+import datetime
+import imageio
 
 def main():
     # Inicializar MediaPipe Hands
@@ -74,6 +77,10 @@ def main():
     
     brush_thickness = 10
     clear_counter = 0
+
+    gif_buffer = deque(maxlen=150) # Buffer para 5 segundos a 30fps
+    if not os.path.exists("outputs"):
+        os.makedirs("outputs")
 
     while cap.isOpened():
         success, frame = cap.read()
@@ -250,10 +257,40 @@ def main():
         # UI de Grosor Actual
         cv2.putText(frame, f"Grosor: {brush_thickness}", (w - 250, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
+        # UI Instrucciones (Derecha)
+        instructions = [
+            "1 Dedo: Pintar",
+            "2 Dedos: Seleccionar",
+            "3 Dedos + Pellizcar: Grosor",
+            "Mano Abierta: Borrador",
+            "Puno (2s): Limpiar",
+            "S: Guardar PNG",
+            "G: Guardar GIF (5s)"
+        ]
+        cv2.rectangle(frame, (w - 320, 100), (w, 110 + len(instructions) * 30), (30, 30, 30), cv2.FILLED)
+        for i, text in enumerate(instructions):
+            cv2.putText(frame, text, (w - 310, 135 + i * 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1)
+
+        # Buffer para exportación a GIF
+        small_frame = cv2.resize(frame, (640, 360))
+        gif_buffer.append(cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB))
+
         cv2.imshow("AR Canvas", frame)
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'):
             break
+        elif key == ord('s'):
+            ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"outputs/canvas_{ts}.png"
+            cv2.imwrite(filename, frame)
+            print(f"Imagen guardada: {filename}")
+        elif key == ord('g'):
+            ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"outputs/proceso_{ts}.gif"
+            print("Guardando GIF... (esto congelara la camara un momento)")
+            imageio.mimsave(filename, list(gif_buffer), fps=30)
+            print(f"GIF guardado: {filename}")
 
     cap.release()
     cv2.destroyAllWindows()
