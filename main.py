@@ -4,18 +4,20 @@ import datetime
 import imageio
 from collections import deque
 import numpy as np
+import time
 
 from gestures import HandTracker
 from canvas import CanvasManager
 from ui import UIManager
 from brushes import BrushRenderer
+from camera import WebcamVideoStream
 
 def main():
-    cap = cv2.VideoCapture(0)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-
-    print("Iniciando AR Canvas - Fase 8 (Modo Iron Man)")
+    print("Iniciando AR Canvas - Optimizacion 60 FPS")
+    
+    # Iniciar la cámara en un hilo secundario
+    cam = WebcamVideoStream(src=0, width=1280, height=720, fps=60).start()
+    time.sleep(1.0) # Esperar a que la cámara caliente
     
     tracker = HandTracker()
     ui = UIManager()
@@ -34,9 +36,12 @@ def main():
     if not os.path.exists("outputs"):
         os.makedirs("outputs")
 
-    while cap.isOpened():
-        success, frame = cap.read()
-        if not success: break
+    prev_time = 0 # Variables para calcular FPS
+
+    while not cam.stopped:
+        success, frame = cam.read()
+        if not success or frame is None: 
+            continue
 
         frame = cv2.flip(frame, 1)
         h, w, c = frame.shape
@@ -124,6 +129,12 @@ def main():
         # 4. Dibujar UI estática superpuesta
         ui.draw_static_ui(frame, brush_thickness)
 
+        # Calcular y Dibujar FPS
+        curr_time = time.time()
+        fps = int(1 / (curr_time - prev_time)) if prev_time != 0 else 0
+        prev_time = curr_time
+        cv2.putText(frame, f"FPS: {fps}", (20, h - 30), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 255, 0), 2)
+
         # 5. Guardar Buffer
         small_frame = cv2.resize(frame, (640, 360))
         gif_buffer.append(cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB))
@@ -131,7 +142,9 @@ def main():
 
         # 6. Teclado
         key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'): break
+        if key == ord('q'): 
+            cam.stop()
+            break
         elif key == ord('s'):
             ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"outputs/canvas_{ts}.png"
@@ -144,7 +157,7 @@ def main():
             imageio.mimsave(filename, list(gif_buffer), fps=30)
             print(f"GIF guardado: {filename}")
 
-    cap.release()
+    cam.stop()
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
