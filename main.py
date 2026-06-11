@@ -76,7 +76,7 @@ def main():
                 # MODO GROSOR
                 brush_thickness = int(np.clip(r_state["pinch_dist"] / 3, 5, 60))
                 cv2.circle(frame, (scx, scy), brush_thickness, draw_color, 2)
-                cv2.putText(frame, "Grosor", (scx - 40, scy - brush_thickness - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+                cv2.putText(frame, "Grosor", (scx - 40, scy - brush_thickness - 20), cv2.FONT_HERSHEY_DUPLEX, 0.7, (255, 255, 255), 2)
                 px, py = 0, 0
 
             elif fingers == [1, 0, 0, 0]:
@@ -98,14 +98,14 @@ def main():
             elif fingers == [0, 0, 0, 0]:
                 # MODO LIMPIAR
                 clear_counter += 1
-                progreso = min(clear_counter, 60)
-                ancho_barra = int((progreso / 60.0) * 450)
+                progreso = min(clear_counter, 30)
+                ancho_barra = int((progreso / 30.0) * 450)
                 cv2.rectangle(frame, (w//2 - 250, h//2), (w//2 - 250 + ancho_barra, h//2 + 30), (0, 0, 255), cv2.FILLED)
                 cv2.rectangle(frame, (w//2 - 250, h//2), (w//2 - 250 + 450, h//2 + 30), (255, 255, 255), 3)
 
-                if clear_counter > 60:
+                if clear_counter > 30:
                     canvas_manager.clear()
-                    cv2.putText(frame, "CANVAS LIMPIO", (w//2 - 200, h//2 + 100), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 5)
+                    cv2.putText(frame, "CANVAS LIMPIO", (w//2 - 200, h//2 + 100), cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0), 5)
                 px, py = 0, 0
                 
             else:

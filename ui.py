@@ -81,7 +81,7 @@ class UIManager:
             by = py + ph + 10
             bw, bh = 85, 30
             cv2.rectangle(frame, (bx, by), (bx + bw, by + bh), (60, 60, 60), cv2.FILLED)
-            cv2.putText(frame, b, (bx + 5, by + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 255, 255), 1)
+            cv2.putText(frame, b, (bx + 5, by + 20), cv2.FONT_HERSHEY_DUPLEX, 0.45, (255, 255, 255), 1)
             if i == brush_idx:
                 cv2.rectangle(frame, (bx, by), (bx + bw, by + bh), (255, 255, 255), 2)
             self.current_brush_rects.append((bx, by, bw, bh))
@@ -93,7 +93,7 @@ class UIManager:
     def draw_static_ui(self, frame, brush_thickness):
         """Dibuja info estática como grosor y atajos."""
         h, w, _ = frame.shape
-        cv2.putText(frame, f"Grosor: {brush_thickness}", (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        cv2.putText(frame, f"Grosor: {brush_thickness}", (20, 50), cv2.FONT_HERSHEY_DUPLEX, 1, (255, 255, 255), 2)
 
         instructions = [
             "AR CANVAS",
@@ -104,7 +104,7 @@ class UIManager:
         ]
         cv2.rectangle(frame, (w - 320, 10), (w, 20 + len(instructions) * 30), (30, 30, 30), cv2.FILLED)
         for i, text in enumerate(instructions):
-            cv2.putText(frame, text, (w - 310, 40 + i * 30), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (200, 255, 255) if i==0 else (200, 200, 200), 2 if i==0 else 1)
+            cv2.putText(frame, text, (w - 310, 40 + i * 30), cv2.FONT_HERSHEY_DUPLEX, 0.55, (200, 255, 255) if i==0 else (200, 200, 200), 2 if i==0 else 1)
 
     def check_spatial_clicks(self, smooth_cx, smooth_cy, draw_color, color_rect, active_brush, brush_idx):
         """Detecta colisiones entre el cursor derecho y la UI flotante de la mano izquierda."""
